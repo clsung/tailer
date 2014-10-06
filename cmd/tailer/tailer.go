@@ -73,15 +73,6 @@ func main() {
 	watchDirs := strings.Split(args[0], ",")
 	filesToTail := []string{}
 
-	// examine the input dir and select how many files to watch and publish
-	for _, dir := range watchDirs {
-		fileGlobPattern := fmt.Sprintf("%s/%s", dir, config.FileGlob)
-		files, _ := filepath.Glob(fileGlobPattern)
-		filesToTail = append(filesToTail, files...)
-		log.Printf("Files to watch now: %v", filesToTail)
-		go tailer.WatchDir(dir)
-	}
-
 	var pub tailer.Publisher
 	if opts.OptNats {
 		natsURL := os.Getenv("NATS_CLUSTER")
@@ -96,11 +87,30 @@ func main() {
 	} else {
 		pub = &tailer.SimplePublisher{}
 	}
+
+	// observe file and add to tailer
+	onCreate := func(filePath string) error {
+		tailer.TailFile(pub, filePath, done)
+		return nil
+	}
+	onRemove := func(filePath string) error {
+		log.Println("TODO: remove event from tailer:", filePath)
+		return nil
+	}
+
+	// examine the input dir and select how many files to watch and publish
+	for _, dir := range watchDirs {
+		fileGlobPattern := fmt.Sprintf("%s/%s", dir, config.FileGlob)
+		files, _ := filepath.Glob(fileGlobPattern)
+		filesToTail = append(filesToTail, files...)
+		log.Printf("Files to watch now: %v", filesToTail)
+		go tailer.WatchDir(onCreate, onRemove, dir)
+	}
+
 	for _, filePath := range filesToTail {
 		tailer.TailFile(pub, filePath, done)
 	}
 
-	for _ = range watchDirs {
-		<-done
-	}
+	// TODO: exit if all watched files removed or closed
+	<-done
 }
