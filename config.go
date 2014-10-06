@@ -1,8 +1,8 @@
 package tailer
 
-// Config decide what we listen to, publish, and target
+// Config describe what we want and publish
 type Config struct {
-	Publisher string `json:"publisher"`
-	URL       string `json:"url,omitempty"`
-	Pattern   string `json:"pattern,omitempty"`
+	FileGlob      string `json:"fileglob,omitempty"`
+	Pattern       string `json:"pattern,omitempty"`
+	IngorePattern string `json:"ignore,omitempty"`
 }

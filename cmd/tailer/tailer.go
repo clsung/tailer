@@ -17,7 +17,8 @@ var version = "v0.0.1"
 
 type cmdOpts struct {
 	OptVersion    bool   `short:"v" long:"version" description:"print the version and exit"`
-	OptConfigfile string `long:"configfile" description:"path to the config file"`
+	OptNats       bool   `long:"nats" description:"Using nats to publish" default:"false"`
+	OptConfigfile string `long:"configfile" description:"config file" optional:"yes"`
 }
 
 func main() {
@@ -47,7 +48,7 @@ func main() {
 		return
 	}
 
-	config := tailer.Config{Publisher: "simple", Pattern: "*.log"}
+	config := tailer.Config{FileGlob: "*.log"}
 	if opts.OptConfigfile != "" {
 		file, _ := os.Open(opts.OptConfigfile)
 		decoder := json.NewDecoder(file)
@@ -62,7 +63,7 @@ func main() {
 
 	// examine the input dir and select how many files to watch and publish
 	for _, dir := range watchDirs {
-		fileGlobPattern := fmt.Sprintf("%s/%s", dir, config.Pattern)
+		fileGlobPattern := fmt.Sprintf("%s/%s", dir, config.FileGlob)
 		files, _ := filepath.Glob(fileGlobPattern)
 		filesToTail = append(filesToTail, files...)
 		log.Printf("Files to watch now: %v", filesToTail)
@@ -70,8 +71,12 @@ func main() {
 	}
 
 	var pub tailer.Publisher
-	if strings.ToLower(config.Publisher) == "nats" {
-		pub, err = tailer.NewNatsPublisher(config.URL)
+	if opts.OptNats {
+		natsURL := os.Getenv("NATS_CLUSTER")
+		if natsURL == "" {
+			natsURL = "nats://localhost:4222"
+		}
+		pub, err = tailer.NewNatsPublisher(natsURL)
 		if err != nil {
 			exitCode = 1
 			return
