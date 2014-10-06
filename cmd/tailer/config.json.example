@@ -1,0 +1,5 @@
+{
+	"publisher":"nats",
+	"url":"nats://localhost:4222",
+	"pattern":"*.log"
+}
