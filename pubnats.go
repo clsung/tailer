@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/apcera/nats"
 )
@@ -11,15 +12,25 @@ import (
 type NatsPublisher struct {
 	URL   string
 	topic string
-	//ec       *nats.EncodedConn
-	nc *nats.Conn
+	nc    *nats.Conn
 }
 
 func NewNatsPublisher(url string) (Publisher, error) {
-	nc, err := nats.Connect(url)
+	opts := nats.DefaultOptions
+	opts.Servers = strings.Split(url, ",")
+	opts.MaxReconnect = 5
+	opts.ReconnectWait = (2 * time.Second)
+
+	nc, err := opts.Connect()
 	if err != nil {
 		log.Printf("error to connect to %s: %v", url, err)
 		return nil, err
+	}
+	nc.Opts.DisconnectedCB = func(_ *nats.Conn) {
+		log.Printf("Got disconnected!\n")
+	}
+	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
+		log.Printf("Got reconnected to %v!\n", nc.ConnectedUrl())
 	}
 	hostname, _ := os.Hostname()
 	return &NatsPublisher{

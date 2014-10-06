@@ -28,7 +28,7 @@ func WatchDir(path string) {
 				if strings.HasSuffix(ev.Name, WatchSuffix) {
 					if ev.Op&fsnotify.Create == fsnotify.Create {
 						log.Println("TODO: add event to tailer:", ev)
-					} else if ev.Op&fsnotify.Rename == fsnotify.Rename {
+					} else if ev.Op&fsnotify.Remove == fsnotify.Remove {
 						log.Println("TODO: remove event from tailer:", ev)
 					}
 				}
