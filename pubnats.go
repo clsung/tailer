@@ -37,7 +37,7 @@ func NewNatsPublisher(url string) (Publisher, error) {
 	hostname, _ := os.Hostname()
 	return &NatsPublisher{
 		URL:   url,
-		topic: hostname,
+		topic: strings.Replace(hostname, "-", ".", -1),
 		nc:    nc,
 	}, nil
 }
