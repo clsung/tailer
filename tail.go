@@ -8,8 +8,7 @@ import (
 	"github.com/ActiveState/tail"
 )
 
-//type emitFunc interface{}
-
+// TailFile tail -f the file and emit with publisher
 func TailFile(pub Publisher, filename string, done chan bool) {
 	defer func() { done <- true }()
 	log.Printf("Tail %s", filename)

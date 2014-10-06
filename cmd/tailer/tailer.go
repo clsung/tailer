@@ -83,7 +83,7 @@ func main() {
 		tailer.TailFile(pub, filePath, done)
 	}
 
-	for _, _ = range watchDirs {
+	for _ = range watchDirs {
 		<-done
 	}
 }

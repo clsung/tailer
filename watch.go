@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// WatchSuffix sets the file extension to watch
 	WatchSuffix = ".log"
 )
 
