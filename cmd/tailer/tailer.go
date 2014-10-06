@@ -18,7 +18,7 @@ var version = "v0.0.1"
 type cmdOpts struct {
 	OptVersion    bool   `short:"v" long:"version" description:"print the version and exit"`
 	OptNats       bool   `long:"nats" description:"Using nats to publish" default:"false"`
-	OptConfigfile string `long:"configfile" description:"config file" optional:"yes"`
+	OptConfigfile string `long:"config" description:"config file" optional:"yes"`
 }
 
 func main() {
@@ -50,11 +50,23 @@ func main() {
 
 	config := tailer.Config{FileGlob: "*.log"}
 	if opts.OptConfigfile != "" {
-		file, _ := os.Open(opts.OptConfigfile)
-		decoder := json.NewDecoder(file)
-		err := decoder.Decode(&config)
+		file, err := os.Open(opts.OptConfigfile)
 		if err != nil {
-			fmt.Println("error:", err)
+			if os.IsNotExist(err) {
+				fmt.Println("Using default config")
+			} else {
+				fmt.Println("error:", err)
+				exitCode = 1
+				return
+			}
+		} else {
+			decoder := json.NewDecoder(file)
+			err = decoder.Decode(&config)
+			if err != nil {
+				fmt.Println("error:", err)
+				exitCode = 1
+				return
+			}
 		}
 	}
 
