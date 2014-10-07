@@ -11,7 +11,8 @@ import (
 // TailFile tail -f the file and emit with publisher
 func TailFile(pub Publisher, filename string, done chan bool) {
 	defer func() { done <- true }()
-	if RegexNotWatch.MatchString(filename) {
+	base := filepath.Base(filename)
+	if RegexNotWatch.MatchString(base) {
 		glog.Warningf("Skip %s", filename)
 		return
 	}
@@ -21,7 +22,6 @@ func TailFile(pub Publisher, filename string, done chan bool) {
 		glog.Errorf("error: %v", err)
 		return
 	}
-	base := filepath.Base(filename)
 	for line := range t.Lines {
 		err = pub.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
 		if err != nil {
