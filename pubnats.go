@@ -34,7 +34,10 @@ func NewNatsPublisher(url string) (Publisher, error) {
 	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
 		log.Printf("Got reconnected to %v!\n", nc.ConnectedUrl())
 	}
-	hostname, _ := os.Hostname()
+	hostname := os.Getenv("HOSTNAME")
+	if hostname == "" {
+		hostname, _ := os.Hostname()
+	}
 	return &NatsPublisher{
 		URL:   url,
 		topic: strings.Replace(hostname, "-", ".", -1),
