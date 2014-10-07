@@ -1,8 +1,9 @@
 package tailer
 
 import (
-	"log"
 	"strings"
+
+	"github.com/golang/glog"
 
 	"gopkg.in/fsnotify.v1"
 )
@@ -16,7 +17,7 @@ var (
 func WatchDir(path string, fHandleMap map[string]interface{}) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 	defer watcher.Close()
 
@@ -30,31 +31,31 @@ func WatchDir(path string, fHandleMap map[string]interface{}) {
 						if f, ok := fHandleMap["onCreate"]; ok {
 							f.(func(string) error)(ev.Name)
 						} else {
-							log.Println("TODO: create event: %s", ev.Name)
+							glog.Warningf("TODO: create event: %s", ev.Name)
 						}
 					} else if ev.Op&fsnotify.Write == fsnotify.Write {
 						if f, ok := fHandleMap["onWrite"]; ok {
 							f.(func(string) error)(ev.Name)
 						} else {
-							log.Println("TODO: write event: %s", ev.Name)
+							glog.Warningf("TODO: write event: %s", ev.Name)
 						}
 					} else if ev.Op&fsnotify.Remove == fsnotify.Remove {
 						if f, ok := fHandleMap["onRemove"]; ok {
 							f.(func(string) error)(ev.Name)
 						} else {
-							log.Println("TODO: remove event: %s", ev.Name)
+							glog.Warningf("TODO: remove event: %s", ev.Name)
 						}
 					}
 				}
 			case err := <-watcher.Errors:
-				log.Println("error:", err)
+				glog.Errorf("error: %v", err)
 			}
 		}
 	}()
 
 	err = watcher.Add(path)
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 
 	<-done

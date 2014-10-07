@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/clsung/tailer"
+	"github.com/golang/glog"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -103,7 +103,7 @@ func main() {
 		fileGlobPattern := fmt.Sprintf("%s/%s", dir, config.FileGlob)
 		files, _ := filepath.Glob(fileGlobPattern)
 		filesToTail = append(filesToTail, files...)
-		log.Printf("Files to watch now: %v", filesToTail)
+		glog.Warningf("Files to watch now: %v", filesToTail)
 		go tailer.WatchDir(dir, fMap)
 	}
 

@@ -1,12 +1,12 @@
 package tailer
 
 import (
-	"log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/apcera/nats"
+	"github.com/golang/glog"
 )
 
 // NatsPublisher will Publish messages via nats
@@ -25,18 +25,18 @@ func NewNatsPublisher(url string) (Publisher, error) {
 
 	nc, err := opts.Connect()
 	if err != nil {
-		log.Printf("error to connect to %s: %v", url, err)
+		glog.Errorf("error to connect to %s: %v", url, err)
 		return nil, err
 	}
 	nc.Opts.DisconnectedCB = func(_ *nats.Conn) {
-		log.Printf("Got disconnected!\n")
+		glog.Warningf("Got disconnected!\n")
 	}
 	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
-		log.Printf("Got reconnected to %v!\n", nc.ConnectedUrl())
+		glog.Warningf("Got reconnected to %v!\n", nc.ConnectedUrl())
 	}
 	hostname := os.Getenv("HOSTNAME")
 	if hostname == "" {
-		hostname, _ := os.Hostname()
+		hostname, _ = os.Hostname()
 	}
 	return &NatsPublisher{
 		URL:   url,
@@ -52,7 +52,7 @@ func (n *NatsPublisher) SetTopic(topic string) {
 
 // Publish publish the message to server
 func (n *NatsPublisher) Publish(msg []byte) error {
-	log.Printf("publish %s with topic %s", msg, n.topic)
+	glog.Infof("publish %s with topic %s", msg, n.topic)
 	return n.nc.Publish(n.topic, msg)
 }
 
