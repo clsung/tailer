@@ -95,7 +95,7 @@ func main() {
 	}
 	fMap := map[string]interface{}{
 		"onCreate": addToTail,
-		"onWrite":  addToTail,
+		//"onWrite":  addToTail,
 	}
 
 	// examine the input dir and select how many files to watch and publish
