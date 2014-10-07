@@ -1,7 +1,7 @@
 package tailer
 
 import (
-	"strings"
+	"regexp"
 
 	"github.com/golang/glog"
 
@@ -10,7 +10,7 @@ import (
 
 var (
 	// WatchSuffix sets the file extension to watch
-	WatchSuffix = ".log"
+	RegexWatch = regexp.MustCompile("^(?!tailer\\.).+")
 )
 
 // WatchDir watches new files added to the dir, and start another tail for it
@@ -26,7 +26,7 @@ func WatchDir(path string, fHandleMap map[string]interface{}) {
 		for {
 			select {
 			case ev := <-watcher.Events:
-				if strings.HasSuffix(ev.Name, WatchSuffix) {
+				if RegexWatch.MatchString(ev.Name) {
 					if ev.Op&fsnotify.Create == fsnotify.Create {
 						if f, ok := fHandleMap["onCreate"]; ok {
 							f.(func(string) error)(ev.Name)

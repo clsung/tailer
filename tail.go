@@ -11,6 +11,10 @@ import (
 // TailFile tail -f the file and emit with publisher
 func TailFile(pub Publisher, filename string, done chan bool) {
 	defer func() { done <- true }()
+	if !RegexWatch.MatchString(filename) {
+		glog.Warningf("Skip %s", filename)
+		return
+	}
 	glog.Warningf("Tail %s", filename)
 	t, err := tail.TailFile(filename, tail.Config{Follow: true})
 	if err != nil {
