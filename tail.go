@@ -18,9 +18,10 @@ func (s *Tailer) addToTail(filePath string) error {
 // TailFile tail -f the file and emit with publisher
 func (s *Tailer) tailFile(filename string) {
 	defer func() {
-		s.waitGroup.Done()
 		glog.Warningf("Stop %s", filename)
+		s.waitGroup.Done()
 	}()
+	s.waitGroup.Add(1)
 	base := filepath.Base(filename)
 	if RegexNotWatch.MatchString(base) {
 		glog.Warningf("Skip %s", filename)
@@ -35,7 +36,6 @@ func (s *Tailer) tailFile(filename string) {
 		glog.Errorf("error: %v", err)
 		return
 	}
-	s.waitGroup.Add(1)
 	for line := range t.Lines {
 		err = s.publisher.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
 		if err != nil {
