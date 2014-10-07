@@ -2,6 +2,7 @@ package tailer
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/ActiveState/tail"
@@ -17,7 +18,10 @@ func TailFile(pub Publisher, filename string, done chan bool) {
 		return
 	}
 	glog.Warningf("Tail %s", filename)
-	t, err := tail.TailFile(filename, tail.Config{Follow: true})
+	t, err := tail.TailFile(filename, tail.Config{
+		// at least one line
+		Follow: true, Location: &tail.SeekInfo{-1, os.SEEK_END},
+	})
 	if err != nil {
 		glog.Errorf("error: %v", err)
 		return

@@ -10,7 +10,7 @@ import (
 
 var (
 	// RegexNotWatch sets the file extension to avoid watching
-	RegexNotWatch = regexp.MustCompile("^tailer\\.")
+	RegexNotWatch = regexp.MustCompile("^(?:tailer\\.|gobzip-)")
 )
 
 // WatchDir watches new files added to the dir, and start another tail for it
