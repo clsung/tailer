@@ -48,7 +48,7 @@ func main() {
 		return
 	}
 
-	config := tailer.Config{FileGlob: "*.log"}
+	config := tailer.Config{FileGlob: "*-*"} // assume abc-def.log
 	if opts.OptConfigfile != "" {
 		file, err := os.Open(opts.OptConfigfile)
 		if err != nil {
@@ -89,13 +89,13 @@ func main() {
 	}
 
 	// observe file and add to tailer
-	onCreate := func(filePath string) error {
+	addToTail := func(filePath string) error {
 		tailer.TailFile(pub, filePath, done)
 		return nil
 	}
-	onRemove := func(filePath string) error {
-		log.Println("TODO: remove event from tailer:", filePath)
-		return nil
+	fMap := map[string]interface{}{
+		"onCreate": addToTail,
+		"onWrite":  addToTail,
 	}
 
 	// examine the input dir and select how many files to watch and publish
@@ -104,7 +104,7 @@ func main() {
 		files, _ := filepath.Glob(fileGlobPattern)
 		filesToTail = append(filesToTail, files...)
 		log.Printf("Files to watch now: %v", filesToTail)
-		go tailer.WatchDir(onCreate, onRemove, dir)
+		go tailer.WatchDir(dir, fMap)
 	}
 
 	for _, filePath := range filesToTail {
