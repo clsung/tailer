@@ -90,7 +90,7 @@ func main() {
 
 	// observe file and add to tailer
 	addToTail := func(filePath string) error {
-		tailer.TailFile(pub, filePath, done)
+		go tailer.TailFile(pub, filePath, done)
 		return nil
 	}
 	fMap := map[string]interface{}{
@@ -108,7 +108,7 @@ func main() {
 	}
 
 	for _, filePath := range filesToTail {
-		tailer.TailFile(pub, filePath, done)
+		go tailer.TailFile(pub, filePath, done)
 	}
 
 	// TODO: exit if all watched files removed or closed
