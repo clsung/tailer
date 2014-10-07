@@ -11,7 +11,7 @@ import (
 // TailFile tail -f the file and emit with publisher
 func TailFile(pub Publisher, filename string, done chan bool) {
 	defer func() { done <- true }()
-	if !RegexWatch.MatchString(filename) {
+	if RegexNotWatch.MatchString(filename) {
 		glog.Warningf("Skip %s", filename)
 		return
 	}

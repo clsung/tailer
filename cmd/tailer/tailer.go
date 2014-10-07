@@ -112,5 +112,7 @@ func main() {
 	}
 
 	// TODO: exit if all watched files removed or closed
-	<-done
+	for _ = range filesToTail {
+		<-done
+	}
 }

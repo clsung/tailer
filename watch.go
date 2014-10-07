@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	// WatchSuffix sets the file extension to watch
-	RegexWatch = regexp.MustCompile("^(?!tailer\\.).+")
+	// RegexNotWatch sets the file extension to avoid watching
+	RegexNotWatch = regexp.MustCompile("^(?:tailer\\.)")
 )
 
 // WatchDir watches new files added to the dir, and start another tail for it
@@ -26,7 +26,7 @@ func WatchDir(path string, fHandleMap map[string]interface{}) {
 		for {
 			select {
 			case ev := <-watcher.Events:
-				if RegexWatch.MatchString(ev.Name) {
+				if !RegexNotWatch.MatchString(ev.Name) {
 					if ev.Op&fsnotify.Create == fsnotify.Create {
 						if f, ok := fHandleMap["onCreate"]; ok {
 							f.(func(string) error)(ev.Name)
