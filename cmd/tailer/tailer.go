@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/clsung/tailer"
-	"github.com/golang/glog"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -71,48 +69,15 @@ func main() {
 	}
 
 	watchDirs := strings.Split(args[0], ",")
-	filesToTail := []string{}
 
-	var pub tailer.Publisher
-	if opts.OptNats {
-		natsURL := os.Getenv("NATS_CLUSTER")
-		if natsURL == "" {
-			natsURL = "nats://localhost:4222"
-		}
-		pub, err = tailer.NewNatsPublisher(natsURL)
-		if err != nil {
-			exitCode = 1
-			return
-		}
-	} else {
-		pub = &tailer.SimplePublisher{}
+	tailer, err := tailer.NewTailer(opts.OptNats)
+	if err != nil {
+		fmt.Println("error:", err)
+		exitCode = 1
+		return
 	}
-
-	// observe file and add to tailer
-	addToTail := func(filePath string) error {
-		go tailer.TailFile(pub, filePath, done)
-		return nil
-	}
-	fMap := map[string]interface{}{
-		"onCreate": addToTail,
-		//"onWrite":  addToTail,
-	}
-
-	// examine the input dir and select how many files to watch and publish
-	for _, dir := range watchDirs {
-		fileGlobPattern := fmt.Sprintf("%s/%s", dir, config.FileGlob)
-		files, _ := filepath.Glob(fileGlobPattern)
-		filesToTail = append(filesToTail, files...)
-		glog.Warningf("Files to watch now: %v", filesToTail)
-		go tailer.WatchDir(dir, fMap)
-	}
-
-	for _, filePath := range filesToTail {
-		go tailer.TailFile(pub, filePath, done)
-	}
+	tailer.Serve(watchDirs, config.FileGlob)
 
 	// TODO: exit if all watched files removed or closed
-	for _ = range filesToTail {
-		<-done
-	}
+	<-done
 }

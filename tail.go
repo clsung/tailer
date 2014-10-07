@@ -9,9 +9,17 @@ import (
 	"github.com/golang/glog"
 )
 
+// observe file and add to tailer
+func (s *Tailer) addToTail(filePath string) error {
+	go s.tailFile(filePath)
+	return nil
+}
+
 // TailFile tail -f the file and emit with publisher
-func TailFile(pub Publisher, filename string, done chan bool) {
-	defer func() { done <- true }()
+func (s *Tailer) tailFile(filename string) {
+	defer func() {
+		s.waitGroup.Done()
+	}()
 	base := filepath.Base(filename)
 	if RegexNotWatch.MatchString(base) {
 		glog.Warningf("Skip %s", filename)
@@ -26,8 +34,9 @@ func TailFile(pub Publisher, filename string, done chan bool) {
 		glog.Errorf("error: %v", err)
 		return
 	}
+	s.waitGroup.Add(1)
 	for line := range t.Lines {
-		err = pub.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
+		err = s.publisher.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
 		if err != nil {
 			glog.Errorf("error: %v", err)
 		}
