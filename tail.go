@@ -19,6 +19,7 @@ func (s *Tailer) addToTail(filePath string) error {
 func (s *Tailer) tailFile(filename string) {
 	defer func() {
 		s.waitGroup.Done()
+		glog.Warningf("Stop %s", filename)
 	}()
 	base := filepath.Base(filename)
 	if RegexNotWatch.MatchString(base) {

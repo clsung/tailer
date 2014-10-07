@@ -53,7 +53,7 @@ func main() {
 			if os.IsNotExist(err) {
 				fmt.Println("Using default config")
 			} else {
-				fmt.Println("error:", err)
+				fmt.Printf("error: %v\n", err)
 				exitCode = 1
 				return
 			}
@@ -61,7 +61,7 @@ func main() {
 			decoder := json.NewDecoder(file)
 			err = decoder.Decode(&config)
 			if err != nil {
-				fmt.Println("error:", err)
+				fmt.Printf("error: %v\n", err)
 				exitCode = 1
 				return
 			}
@@ -72,7 +72,7 @@ func main() {
 
 	tailer, err := tailer.NewTailer(opts.OptNats)
 	if err != nil {
-		fmt.Println("error:", err)
+		fmt.Printf("error: %v\n", err)
 		exitCode = 1
 		return
 	}
@@ -80,4 +80,5 @@ func main() {
 
 	// TODO: exit if all watched files removed or closed
 	<-done
+	fmt.Println("Exit with 0")
 }
