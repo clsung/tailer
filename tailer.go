@@ -12,7 +12,7 @@ import (
 
 var (
 	// RegexNotWatch sets the file extension to avoid watching
-	RegexNotWatch = regexp.MustCompile("^(?:tailer\\.|gobzip-)")
+	RegexNotWatch = regexp.MustCompile("^(?:tailer\\.|gobzip-|\\..+\\.swp)")
 )
 
 // Tailer init the service functions
