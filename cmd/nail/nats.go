@@ -18,7 +18,7 @@ func main() {
 	}
 	opts.Servers = strings.Split(natsURL, ",")
 	opts.MaxReconnect = 5
-	opts.ReconnectWait = (20 * time.Second)
+	opts.ReconnectWait = (2 * time.Second)
 	nc, err := opts.Connect()
 	log.SetFlags(0)
 
