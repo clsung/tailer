@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/apcera/nats"
@@ -17,8 +18,8 @@ func main() {
 		natsURL = "nats://localhost:4222"
 	}
 	opts.Servers = strings.Split(natsURL, ",")
-	opts.MaxReconnect = 5
-	opts.ReconnectWait = (2 * time.Second)
+	opts.MaxReconnect = 10
+	opts.ReconnectWait = (1 * time.Second)
 	nc, err := opts.Connect()
 	log.SetFlags(0)
 
@@ -32,8 +33,23 @@ func main() {
 	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
 		log.Printf("Got reconnected to %v!\n", nc.ConnectedUrl())
 	}
+	nc.Opts.AsyncErrorCB = func(nc *nats.Conn, s *nats.Subscription, err error) {
+		log.Printf("Got asyncerror %v, %v: %v!\n", nc.ConnectedUrl(), s, err)
+	}
 
-	done := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			err := nc.LastError()
+			if err != nil {
+				log.Printf("Error: %v", err)
+				break
+			}
+			time.Sleep(1 * time.Second)
+		}
+	}()
 	if len(os.Args) == 1 {
 		log.Fatal("Need specify the topic")
 	}
@@ -42,5 +58,5 @@ func main() {
 		fmt.Printf("[%s]: %s\n", m.Subject, string(m.Data))
 	})
 
-	<-done
+	wg.Wait()
 }
