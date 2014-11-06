@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -34,18 +34,12 @@ func main() {
 	}
 
 	done := make(chan struct{})
-	regexNotNeed, err := regexp.Compile("(?:queue/queue.go|\\[Polling\\])")
-	if err != nil {
-		log.Fatal(err)
-	}
 	if len(os.Args) == 1 {
 		log.Fatal("Need specify the topic")
 	}
 	topic := os.Args[1]
 	nc.Subscribe(topic, func(m *nats.Msg) {
-		if !regexNotNeed.Match(m.Data) {
-			log.Printf("[%s]: %s\n", m.Subject, string(m.Data))
-		}
+		fmt.Printf("[%s]: %s\n", m.Subject, string(m.Data))
 	})
 
 	<-done
