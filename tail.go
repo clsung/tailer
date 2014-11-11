@@ -33,17 +33,17 @@ func (s *Tailer) tailFile(filename string) {
 		Follow: true, Location: &tail.SeekInfo{-1, os.SEEK_END},
 	})
 	if err != nil {
-		glog.Errorf("error: %v", err)
+		glog.Errorf("initial tail file error: %v", err)
 		return
 	}
 	for line := range t.Lines {
 		err = s.publisher.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
 		if err != nil {
-			glog.Errorf("error: %v", err)
+			glog.Errorf("publish error: %v", err)
 		}
 	}
 	err = t.Wait()
 	if err != nil {
-		glog.Errorf("error: %v", err)
+		glog.Errorf("wait error: %v", err)
 	}
 }
