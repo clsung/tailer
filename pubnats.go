@@ -52,7 +52,7 @@ func (n *NatsPublisher) SetTopic(topic string) {
 
 // Publish publish the message to server
 func (n *NatsPublisher) Publish(msg []byte) error {
-	glog.Infof("publish %s with topic %s", msg, n.topic)
+	glog.V(2).Infof("publish %s with topic %s", msg, n.topic)
 	return n.nc.Publish(n.topic, msg)
 }
 
