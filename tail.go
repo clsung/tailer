@@ -29,8 +29,7 @@ func (s *Tailer) tailFile(filename string) {
 	}
 	glog.Warningf("Tail %s", filename)
 	t, err := tail.TailFile(filename, tail.Config{
-		// at least one line
-		Follow: true, Location: &tail.SeekInfo{-1, os.SEEK_END},
+		Follow: true, Location: &tail.SeekInfo{0, os.SEEK_END},
 	})
 	if err != nil {
 		glog.Errorf("initial tail file error: %v", err)
