@@ -20,14 +20,21 @@ type Tailer struct {
 	ch        chan bool
 	waitGroup *sync.WaitGroup
 	publisher Publisher
+	matchLine *regexp.Regexp
 }
 
 // Make a new Tailer
-func NewTailer(publishToNats bool) (*Tailer, error) {
+func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 	var err error
 	t := &Tailer{
 		ch:        make(chan bool),
 		waitGroup: &sync.WaitGroup{},
+	}
+	if len(config.Match) > 0 {
+		t.matchLine, err = regexp.Compile(config.Match)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if publishToNats {
 		natsURL := os.Getenv("NATS_CLUSTER")

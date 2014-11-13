@@ -70,7 +70,7 @@ func main() {
 
 	watchDirs := strings.Split(args[0], ",")
 
-	tailer, err := tailer.NewTailer(opts.OptNats)
+	tailer, err := tailer.NewTailer(opts.OptNats, config)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		exitCode = 1
