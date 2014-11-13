@@ -4,5 +4,5 @@ package tailer
 type Config struct {
 	FileGlob      string `json:"fileglob,omitempty"`
 	Match         string `json:"match,omitempty"`
-	IngorePattern string `json:"ignore,omitempty"`
+	IgnorePattern string `json:"ignore,omitempty"`
 }
