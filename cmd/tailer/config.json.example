@@ -1,4 +1,5 @@
 {
 	"fileglob":"*.log",
 	"ignore":"[Polling]"
+	"match":"[^EWD]"
 }
