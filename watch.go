@@ -24,7 +24,7 @@ func (s *Tailer) watchDir(path string) {
 						s.addToTail(ev.Name)
 						glog.Warningf("TODO: create event: %s", ev.Name)
 					} else if ev.Op&fsnotify.Write == fsnotify.Write {
-						glog.Warningf("TODO: write event: %s", ev.Name)
+						//glog.Warningf("TODO: write event: %s", ev.Name)
 					} else if ev.Op&fsnotify.Remove == fsnotify.Remove {
 						glog.Warningf("TODO: remove event: %s", ev.Name)
 					}

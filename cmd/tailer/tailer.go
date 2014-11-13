@@ -48,7 +48,7 @@ func main() {
 
 	config := tailer.Config{FileGlob: "*-*"} // assume abc-def.log
 	configFile := opts.OptConfigfile
-	if configFile != "" {
+	if configFile == "" {
 		configFile = os.Getenv("TAILER_CONFIG")
 	}
 	if configFile != "" {
@@ -62,6 +62,7 @@ func main() {
 				return
 			}
 		} else {
+			fmt.Printf("Using config file: %s\n", configFile)
 			decoder := json.NewDecoder(file)
 			err = decoder.Decode(&config)
 			if err != nil {

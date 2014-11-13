@@ -31,6 +31,7 @@ func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 		waitGroup: &sync.WaitGroup{},
 	}
 	if len(config.Match) > 0 {
+		glog.Warningf("Filter line by regex: %s", config.Match)
 		t.matchLine, err = regexp.Compile(config.Match)
 		if err != nil {
 			return nil, err
