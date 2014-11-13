@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/apcera/nats"
+	"github.com/clsung/tailer"
 )
 
 func main() {
@@ -54,9 +55,19 @@ func main() {
 		log.Fatal("Need specify the topic")
 	}
 	topic := os.Args[1]
+	// TODO: make it flag
+	mq := tailer.NewMessageQueue(1 << 20)
 	nc.Subscribe(topic, func(m *nats.Msg) {
-		fmt.Printf("[%s]: %s\n", m.Subject, string(m.Data))
+		mq.Push(m)
 	})
+	go func() {
+		for {
+			m, ok := mq.Pop()
+			if ok {
+				fmt.Printf("[%s]: %s\n", m.Subject, string(m.Data))
+			}
+		}
+	}()
 
 	wg.Wait()
 }
