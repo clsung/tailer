@@ -47,8 +47,12 @@ func main() {
 	}
 
 	config := tailer.Config{FileGlob: "*-*"} // assume abc-def.log
-	if opts.OptConfigfile != "" {
-		file, err := os.Open(opts.OptConfigfile)
+	configFile := opts.OptConfigfile
+	if configFile != "" {
+		configFile = os.Getenv("TAILER_CONFIG")
+	}
+	if configFile != "" {
+		file, err := os.Open(configFile)
 		if err != nil {
 			if os.IsNotExist(err) {
 				fmt.Println("Using default config")
