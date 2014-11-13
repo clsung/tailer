@@ -1,4 +1,3 @@
 {
-	"fileglob":"*.log",
     "match":"^[EWD]"
 }
