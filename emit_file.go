@@ -17,17 +17,18 @@ const fileLayout = "200601021504"
 type FileEmitter struct {
 	out    *os.File
 	dir    string
+	prefix string
 	ticker *time.Ticker
 	fLock  sync.Mutex
 }
 
-func NewFileEmitter(directory string) (Emitter, error) {
+func NewFileEmitter(directory, prefix string) (Emitter, error) {
 	var err error
 	directory, err = filepath.Abs(directory)
 	if err != nil {
 		return nil, err
 	}
-	f := &FileEmitter{dir: directory}
+	f := &FileEmitter{dir: directory, prefix: prefix}
 	return f, nil
 }
 
@@ -73,7 +74,7 @@ func (f *FileEmitter) Emit(m *nats.Msg) (err error) {
 }
 
 func (f *FileEmitter) rotate() (err error) {
-	filePath := fmt.Sprintf("%s/%s.log", f.dir, time.Now().UTC().Format(fileLayout))
+	filePath := fmt.Sprintf("%s/%s%s.log", f.dir, f.prefix, time.Now().UTC().Format(fileLayout))
 	fmt.Printf("Write to %s\n", filePath)
 
 	f.fLock.Lock()

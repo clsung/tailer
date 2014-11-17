@@ -15,6 +15,7 @@ import (
 
 var (
 	logDir    = flag.String("nail_log_dir", "", "Directory to store logs.")
+	logPrefix = flag.String("nail_log_prefix", "", "Log file prefix")
 	regExp    = flag.String("nail_filter_pattern", "", "pattern to filter the regex")
 	hasStdout = flag.Bool("nail_stdout", true, "send to stdout")
 )
@@ -83,7 +84,7 @@ func main() {
 		emitters = append(emitters, &tailer.StdoutEmitter{})
 	}
 	if *logDir != "" {
-		fileEmitter, err := tailer.NewFileEmitter(*logDir)
+		fileEmitter, err := tailer.NewFileEmitter(*logDir, *logPrefix)
 		if err != nil {
 			log.Fatalf("create file emitter error %v", err)
 		}
