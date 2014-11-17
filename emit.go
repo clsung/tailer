@@ -9,7 +9,7 @@ import (
 // Emitter will emit Nats messages
 type Emitter interface {
 	Emit(msg *nats.Msg) error
-	Start()
+	Start() error
 	Stop()
 }
 
@@ -23,7 +23,8 @@ func (f *StdoutEmitter) Emit(msg *nats.Msg) error {
 	return nil
 }
 
-func (f *StdoutEmitter) Start() {
+func (f *StdoutEmitter) Start() error {
+	return nil
 }
 
 func (f *StdoutEmitter) Stop() {

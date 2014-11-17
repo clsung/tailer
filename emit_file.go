@@ -31,15 +31,24 @@ func NewFileEmitter(directory string) (Emitter, error) {
 	return f, nil
 }
 
-func (f *FileEmitter) Start() {
+func (f *FileEmitter) Start() (err error) {
 	fmt.Printf("Start fileEmitter")
 	f.ticker = time.NewTicker(time.Minute)
-	f.rotate()
+	err = f.rotate()
+	if err != nil {
+		glog.Errorf("Start error: %v", err)
+		return err
+	}
 	go func() {
 		for _ = range f.ticker.C {
-			f.rotate()
+			err = f.rotate()
+			if err != nil {
+				glog.Errorf("Ticker error: %v", err)
+				break
+			}
 		}
 	}()
+	return err
 }
 
 func (f *FileEmitter) Stop() {
@@ -65,6 +74,7 @@ func (f *FileEmitter) Emit(m *nats.Msg) (err error) {
 
 func (f *FileEmitter) rotate() (err error) {
 	filePath := fmt.Sprintf("%s/%s.log", f.dir, time.Now().UTC().Format(fileLayout))
+	fmt.Printf("Write to %s\n", filePath)
 
 	f.fLock.Lock()
 	defer f.fLock.Unlock()
