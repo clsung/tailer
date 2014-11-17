@@ -91,5 +91,10 @@ func (f *FileEmitter) rotate() (err error) {
 		glog.Errorf("Create/Append File error: %v", err)
 		return err
 	}
+	_, err = f.out.Seek(0, os.SEEK_END)
+	if err != nil {
+		glog.Errorf("Seek File error: %v", err)
+		return err
+	}
 	return nil
 }

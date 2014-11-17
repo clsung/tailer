@@ -36,8 +36,11 @@ func main() {
 		log.Fatal(err)
 	}
 	defer nc.Close()
+
+	// TODO: make it flag
+	mq := tailer.NewMessageQueue(1 << 20)
 	nc.Opts.DisconnectedCB = func(_ *nats.Conn) {
-		log.Println("Got disconnected!")
+		log.Printf("Got disconnected! Queued %d messagse\n", mq.Len())
 	}
 	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
 		log.Printf("Got reconnected to %v!\n", nc.ConnectedUrl())
@@ -63,8 +66,6 @@ func main() {
 		log.Fatal("Need specify the topic")
 	}
 	topic := flag.Arg(0)
-	// TODO: make it flag
-	mq := tailer.NewMessageQueue(1 << 20)
 	nc.Subscribe(topic, func(m *nats.Msg) {
 		mq.Push(m)
 	})
