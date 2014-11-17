@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -12,7 +13,13 @@ import (
 	"github.com/clsung/tailer"
 )
 
+var (
+	logDir = flag.String("nail_log_dir", "", "Directory to store logs.")
+	regExp = flag.String("filter_pattern", "", "pattern to filter the regex")
+)
+
 func main() {
+	flag.Parse()
 	opts := nats.DefaultOptions
 	natsURL := os.Getenv("NATS_CLUSTER")
 	if natsURL == "" {
@@ -51,20 +58,48 @@ func main() {
 			time.Sleep(1 * time.Second)
 		}
 	}()
-	if len(os.Args) == 1 {
+	if len(flag.Args()) < 1 {
 		log.Fatal("Need specify the topic")
 	}
-	topic := os.Args[1]
+	topic := flag.Arg(0)
 	// TODO: make it flag
 	mq := tailer.NewMessageQueue(1 << 20)
 	nc.Subscribe(topic, func(m *nats.Msg) {
 		mq.Push(m)
 	})
+	var matchLine *regexp.Regexp
+	if *regExp != "" {
+		log.Printf("Filter line by regex: %s", *regExp)
+
+		matchLine, err = regexp.Compile(*regExp)
+		if err != nil {
+			log.Fatalf("regex %s error:%v", *regExp, err)
+		}
+	}
+	emitters := make([]tailer.Emitter, 0)
+	emitters = append(emitters, &tailer.StdoutEmitter{})
+	if *logDir != "" {
+		fileEmitter, err := tailer.NewFileEmitter(*logDir)
+		if err != nil {
+			log.Fatalf("create file emitter error %v", err)
+		}
+		fileEmitter.Start()
+		emitters = append(emitters, fileEmitter)
+		defer fileEmitter.Stop()
+	}
+
 	go func() {
 		for {
 			m, ok := mq.Pop()
 			if ok {
-				fmt.Printf("[%s]: %s\n", m.Subject, string(m.Data))
+				// TODO: filter logic put here
+				if matchLine != nil && !matchLine.Match(m.Data) {
+					// skip unmatched
+					continue
+				}
+				for _, emitter := range emitters {
+					emitter.Emit(m)
+				}
 			}
 		}
 	}()
