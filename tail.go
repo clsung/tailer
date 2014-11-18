@@ -36,13 +36,8 @@ func (s *Tailer) tailFile(filename string) {
 		return
 	}
 	for line := range t.Lines {
-		if s.matchLine != nil {
-			if s.matchLine.MatchString(line.Text) {
-				err = s.publisher.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
-				if err != nil {
-					glog.Errorf("publish error: %v", err)
-				}
-			}
+		if s.matchLine != nil && !s.matchLine.MatchString(line.Text) {
+			continue
 		} else {
 			err = s.publisher.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
 			if err != nil {
