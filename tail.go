@@ -11,6 +11,9 @@ import (
 
 // observe file and add to tailer
 func (s *Tailer) addToTail(filePath string) error {
+	s.fileLock.Lock()
+	s.filesToTail = append(s.filesToTail, filePath)
+	s.fileLock.Unlock()
 	go s.tailFile(filePath)
 	return nil
 }

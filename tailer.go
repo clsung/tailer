@@ -17,18 +17,21 @@ var (
 
 // Tailer init the service functions
 type Tailer struct {
-	ch        chan bool
-	waitGroup *sync.WaitGroup
-	publisher Publisher
-	matchLine *regexp.Regexp
+	ch          chan bool
+	waitGroup   *sync.WaitGroup
+	publisher   Publisher
+	matchLine   *regexp.Regexp
+	filesToTail []string
+	fileLock    sync.Mutex
 }
 
 // Make a new Tailer
 func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 	var err error
 	t := &Tailer{
-		ch:        make(chan bool),
-		waitGroup: &sync.WaitGroup{},
+		ch:          make(chan bool),
+		waitGroup:   &sync.WaitGroup{},
+		filesToTail: []string{},
 	}
 	if len(config.Match) > 0 {
 		glog.Warningf("Filter line by regex: %s", config.Match)
@@ -53,13 +56,12 @@ func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 }
 
 func (s *Tailer) Serve(watchDirs []string, fileGlob string) {
-	filesToTail := []string{}
 	// examine the input dir and select how many files to watch and publish
 	for _, dir := range watchDirs {
 		fileGlobPattern := fmt.Sprintf("%s/%s", dir, fileGlob)
 		files, _ := filepath.Glob(fileGlobPattern)
-		filesToTail = append(filesToTail, files...)
-		glog.Warningf("Files to watch now: %v", filesToTail)
+		s.filesToTail = append(s.filesToTail, files...)
+		glog.Warningf("Files to watch now: %v", s.filesToTail)
 		go s.watchDir(dir)
 	}
 
