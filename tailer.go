@@ -65,7 +65,7 @@ func (s *Tailer) Serve(watchDirs []string, fileGlob string) {
 		go s.watchDir(dir)
 	}
 
-	for _, filePath := range filesToTail {
+	for _, filePath := range s.filesToTail {
 		go s.tailFile(filePath)
 	}
 
