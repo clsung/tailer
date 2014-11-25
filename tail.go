@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/ActiveState/tail"
 	"github.com/golang/glog"
@@ -38,6 +39,25 @@ func (s *Tailer) tailFile(filename string) {
 		glog.Errorf("initial tail file error: %v", err)
 		return
 	}
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		for {
+			// FIXME: if files being watched is more then xxx, then we do this
+			// every 60 mins, we check if the file is not appended anymore, then unsubscribe it
+			fi, err := os.Stat(filename)
+			if err != nil {
+				t.Killf("stat file %s error: %v", filename, err)
+				break
+			}
+			if time.Now().After(fi.ModTime().Add(time.Hour)) {
+				glog.Warningf("unwatch modified time > 60 minutes: %s", filename)
+				t.Kill(nil)
+				break
+			} else {
+				time.Sleep(time.Hour)
+			}
+		}
+	}()
 	for line := range t.Lines {
 		if s.matchLine != nil && !s.matchLine.MatchString(line.Text) {
 			continue
