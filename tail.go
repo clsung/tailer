@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"time"
 
 	"github.com/ActiveState/tail"
@@ -12,9 +13,6 @@ import (
 
 // observe file and add to tailer
 func (s *Tailer) addToTail(filePath string) error {
-	s.fileLock.Lock()
-	s.filesToTail = append(s.filesToTail, filePath)
-	s.fileLock.Unlock()
 	go s.tailFile(filePath)
 	return nil
 }
@@ -31,7 +29,7 @@ func (s *Tailer) tailFile(filename string) {
 		glog.Warningf("Skip %s", filename)
 		return
 	}
-	glog.Warningf("Tail %s", filename)
+	glog.Warningf("Tail %s, %d are watched", filename, atomic.LoadInt64(&s.numOfTail))
 	t, err := tail.TailFile(filename, tail.Config{
 		Follow: true, Location: &tail.SeekInfo{0, os.SEEK_END},
 	})
@@ -39,6 +37,9 @@ func (s *Tailer) tailFile(filename string) {
 		glog.Errorf("initial tail file error: %v", err)
 		return
 	}
+	s.fileLock.Lock()
+	atomic.AddInt64(&s.numOfTail, 1)
+	s.fileLock.Unlock()
 	go func() {
 		time.Sleep(50 * time.Millisecond)
 		for {
@@ -72,4 +73,7 @@ func (s *Tailer) tailFile(filename string) {
 	if err != nil {
 		glog.Errorf("wait error: %v", err)
 	}
+	s.fileLock.Lock()
+	atomic.AddInt64(&s.numOfTail, -1)
+	s.fileLock.Unlock()
 }
