@@ -22,11 +22,15 @@ func (s *Tailer) watchDir(path string) {
 				if !RegexNotWatch.MatchString(ev.Name) {
 					if ev.Op&fsnotify.Create == fsnotify.Create {
 						s.addToTail(ev.Name)
-						glog.Warningf("TODO: create event: %s", ev.Name)
+						if glog.V(2) {
+							glog.Warningf("TODO: create event: %s", ev.Name)
+						}
 					} else if ev.Op&fsnotify.Write == fsnotify.Write {
 						//glog.Warningf("TODO: write event: %s", ev.Name)
 					} else if ev.Op&fsnotify.Remove == fsnotify.Remove {
-						glog.Warningf("TODO: remove event: %s", ev.Name)
+						if glog.V(2) {
+							glog.Warningf("TODO: remove event: %s", ev.Name)
+						}
 					}
 				}
 			case err := <-watcher.Errors:

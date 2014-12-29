@@ -20,13 +20,17 @@ func (s *Tailer) addToTail(filePath string) error {
 // TailFile tail -f the file and emit with publisher
 func (s *Tailer) tailFile(filename string) {
 	defer func() {
-		glog.Warningf("Stop %s", filename)
+		if glog.V(2) {
+			glog.Warningf("Stop %s", filename)
+		}
 		s.waitGroup.Done()
 	}()
 	s.waitGroup.Add(1)
 	base := filepath.Base(filename)
 	if RegexNotWatch.MatchString(base) {
-		glog.Warningf("Skip %s", filename)
+		if glog.V(2) {
+			glog.Warningf("Skip %s", filename)
+		}
 		return
 	}
 	glog.Warningf("Tail %s, %d are watched", filename, atomic.LoadInt64(&s.numOfTail))
