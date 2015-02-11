@@ -16,6 +16,8 @@ type NatsPublisher struct {
 	nc    *nats.Conn
 }
 
+var ErrNatsConnectionClosed = nats.ErrConnectionClosed
+
 // NewNatsPublisher return a Publisher using nats
 func NewNatsPublisher(url string) (Publisher, error) {
 	opts := nats.DefaultOptions

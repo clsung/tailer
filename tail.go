@@ -69,6 +69,9 @@ func (s *Tailer) tailFile(filename string) {
 		} else {
 			err = s.publisher.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
 			if err != nil {
+				if err == ErrNatsConnectionClosed {
+					glog.Fatalf("publish error: %v", err)
+				}
 				glog.Errorf("publish error: %v", err)
 			}
 		}
