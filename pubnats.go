@@ -1,6 +1,7 @@
 package tailer
 
 import (
+	"errors"
 	"os"
 	"strings"
 	"time"
@@ -16,7 +17,10 @@ type NatsPublisher struct {
 	nc    *nats.Conn
 }
 
-var ErrNatsConnectionClosed = nats.ErrConnectionClosed
+var (
+	ErrNatsConnectionClosed    = nats.ErrConnectionClosed
+	ErrNatsExceedMaxReconnects = errors.New("pubnats: exceed max reconnects")
+)
 
 // NewNatsPublisher return a Publisher using nats
 func NewNatsPublisher(url string) (Publisher, error) {
@@ -30,8 +34,8 @@ func NewNatsPublisher(url string) (Publisher, error) {
 		glog.Errorf("error to connect to %s: %v", url, err)
 		return nil, err
 	}
-	nc.Opts.DisconnectedCB = func(_ *nats.Conn) {
-		glog.Warningf("Got disconnected!\n")
+	nc.Opts.DisconnectedCB = func(nc *nats.Conn) {
+		glog.Warningf("Got disconnected! Reconnects: %d\n", nc.Reconnects)
 	}
 	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
 		glog.Warningf("Got reconnected to %v!\n", nc.ConnectedUrl())
@@ -52,27 +56,24 @@ func (n *NatsPublisher) SetTopic(topic string) {
 	n.topic = topic
 }
 
+func (n *NatsPublisher) isExceedMaxReconnects() bool {
+	if uint64(n.nc.Opts.MaxReconnect) < n.nc.Reconnects {
+		return true
+	}
+	return false
+}
+
 // Publish publish the message to server
 func (n *NatsPublisher) Publish(msg []byte) error {
 	glog.V(2).Infof("publish %s with topic %s", msg, n.topic)
-	for {
-		err := n.nc.Publish(n.topic, msg)
-		if err == nil {
-			return nil
+	err := n.nc.Publish(n.topic, msg)
+	if err != nil {
+		if n.isExceedMaxReconnects() {
+			return ErrNatsExceedMaxReconnects
 		}
-		glog.Warningf("nats conn status: %v", n.nc.Status())
-		if err == nats.ErrConnectionClosed {
-			for {
-				if n.nc.IsReconnecting() {
-					continue
-				}
-				break
-			}
-			if n.nc.IsClosed() {
-				return ErrNatsConnectionClosed
-			}
-		}
+		return err
 	}
+	return nil
 }
 
 // Close close the channel
