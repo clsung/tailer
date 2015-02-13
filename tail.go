@@ -71,8 +71,9 @@ func (s *Tailer) tailFile(filename string) {
 			if err != nil {
 				if err == ErrNatsConnectionClosed {
 					glog.Fatalf("publish error: %v", err)
+				} else {
+					glog.Errorf("publish error: %v", err)
 				}
-				glog.Errorf("publish error: %v", err)
 			}
 		}
 	}

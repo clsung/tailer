@@ -22,8 +22,8 @@ var ErrNatsConnectionClosed = nats.ErrConnectionClosed
 func NewNatsPublisher(url string) (Publisher, error) {
 	opts := nats.DefaultOptions
 	opts.Servers = strings.Split(url, ",")
-	opts.MaxReconnect = 5
-	opts.ReconnectWait = (2 * time.Second)
+	opts.MaxReconnect = 10
+	opts.ReconnectWait = (1 * time.Second)
 
 	nc, err := opts.Connect()
 	if err != nil {
@@ -55,7 +55,24 @@ func (n *NatsPublisher) SetTopic(topic string) {
 // Publish publish the message to server
 func (n *NatsPublisher) Publish(msg []byte) error {
 	glog.V(2).Infof("publish %s with topic %s", msg, n.topic)
-	return n.nc.Publish(n.topic, msg)
+	for {
+		err := n.nc.Publish(n.topic, msg)
+		if err == nil {
+			return nil
+		}
+		glog.Warningf("nats conn status: %v", n.nc.Status())
+		if err == nats.ErrConnectionClosed {
+			for {
+				if n.nc.IsReconnecting() {
+					continue
+				}
+				break
+			}
+			if n.nc.IsClosed() {
+				return ErrNatsConnectionClosed
+			}
+		}
+	}
 }
 
 // Close close the channel
