@@ -35,10 +35,13 @@ func NewNatsPublisher(url string) (Publisher, error) {
 		return nil, err
 	}
 	nc.Opts.DisconnectedCB = func(nc *nats.Conn) {
-		glog.Warningf("Got disconnected! Reconnects: %d\n", nc.Reconnects)
+		glog.Warningf("Got disconnected! Reconnects: %d", nc.Reconnects)
 	}
 	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
-		glog.Warningf("Got reconnected to %v!\n", nc.ConnectedUrl())
+		glog.Warningf("Got reconnected to %v!", nc.ConnectedUrl())
+	}
+	nc.Opts.ClosedCB = func(_ *nats.Conn) {
+		glog.Fatal("Got closed")
 	}
 	hostname := os.Getenv("HOSTNAME")
 	if hostname == "" {
