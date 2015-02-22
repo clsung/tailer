@@ -35,7 +35,7 @@ func (s *Tailer) tailFile(filename string) {
 	}
 	glog.Warningf("Tail %s, %d are watched", filename, atomic.LoadInt64(&s.numOfTail))
 	t, err := tail.TailFile(filename, tail.Config{
-		Follow: true, Location: &tail.SeekInfo{0, os.SEEK_END},
+		Follow: true, Location: &tail.SeekInfo{Offset: 0, Whence: os.SEEK_END},
 	})
 	if err != nil {
 		glog.Errorf("initial tail file error: %v", err)
