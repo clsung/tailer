@@ -5,11 +5,9 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/apcera/nats"
 	"github.com/clsung/tailer"
 )
 
@@ -18,58 +16,48 @@ var (
 	logPrefix = flag.String("nail_log_prefix", "", "Log file prefix")
 	regExp    = flag.String("nail_filter_pattern", "", "pattern to filter the regex")
 	hasStdout = flag.Bool("nail_stdout", true, "send to stdout")
+	workers   = flag.Int("nail_worker", 2, "queue workers")
 )
 
 func main() {
 	flag.Parse()
-	opts := nats.DefaultOptions
+	log.SetFlags(0)
 	natsURL := os.Getenv("NATS_CLUSTER")
 	if natsURL == "" {
 		natsURL = "nats://localhost:4222"
 	}
-	opts.Servers = strings.Split(natsURL, ",")
-	opts.MaxReconnect = 10
-	opts.ReconnectWait = (1 * time.Second)
-	nc, err := opts.Connect()
-	log.SetFlags(0)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer nc.Close()
-
-	// TODO: make it flag
-	mq := tailer.NewMessageQueue(1 << 20)
-	nc.Opts.DisconnectedCB = func(_ *nats.Conn) {
-		log.Printf("Got disconnected! Queued %d messagse\n", mq.Len())
-	}
-	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
-		log.Printf("Got reconnected to %v!\n", nc.ConnectedUrl())
-	}
-	nc.Opts.AsyncErrorCB = func(nc *nats.Conn, s *nats.Subscription, err error) {
-		log.Printf("Got asyncerror %v, %v: %v!\n", nc.ConnectedUrl(), s, err)
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for {
-			err := nc.LastError()
-			if err != nil {
-				log.Printf("Error: %v", err)
-				break
-			}
-			time.Sleep(1 * time.Second)
-		}
-	}()
 	if len(flag.Args()) < 1 {
 		log.Fatal("Need specify the topic")
 	}
 	topic := flag.Arg(0)
-	nc.Subscribe(topic, func(m *nats.Msg) {
-		mq.Push(m)
-	})
+	// TODO: make it flag
+	mq := tailer.NewMessageQueue(1 << 20)
+	var wg sync.WaitGroup
+	var err error
+	wg.Add(*workers)
+	for i := 1; i <= *workers; i++ {
+		subscriber, err := tailer.NewNatsSubscriber(natsURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		subscriber.Bind(mq)
+		err = subscriber.Subscribe(topic)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer subscriber.Close()
+		go func() {
+			defer wg.Done()
+			for {
+				err := subscriber.LastError()
+				if err != nil {
+					log.Printf("Error: %v", err)
+					break
+				}
+				time.Sleep(1 * time.Second)
+			}
+		}()
+	}
 	var matchLine *regexp.Regexp
 	if *regExp != "" {
 		log.Printf("Filter line by regex: %s", *regExp)
