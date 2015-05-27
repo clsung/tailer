@@ -17,12 +17,13 @@ var (
 
 // Tailer init the service functions
 type Tailer struct {
-	ch        chan bool
-	waitGroup *sync.WaitGroup
-	publisher Publisher
-	matchLine *regexp.Regexp
-	numOfTail int64
-	fileLock  sync.Mutex
+	ch          chan bool
+	waitGroup   *sync.WaitGroup
+	publisher   Publisher
+	matchLine   *regexp.Regexp
+	numOfTail   int64
+	fileLock    sync.Mutex
+	visitedFile map[string]bool
 }
 
 // Make a new Tailer

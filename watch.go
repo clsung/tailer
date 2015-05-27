@@ -6,6 +6,17 @@ import (
 	"gopkg.in/fsnotify.v1"
 )
 
+func (s *Tailer) isUnwantEvent(ev fsnotify.Event) bool {
+	if s.visitedFile[ev.Name] {
+		return true
+	}
+	if RegexNotWatch.MatchString(ev.Name) {
+		s.visitedFile[ev.Name] = true
+		return true
+	}
+	return false
+}
+
 // watchDir watches new files added to the dir, and start another tail for it
 func (s *Tailer) watchDir(path string) {
 	watcher, err := fsnotify.NewWatcher()
@@ -19,7 +30,7 @@ func (s *Tailer) watchDir(path string) {
 		for {
 			select {
 			case ev := <-watcher.Events:
-				if !RegexNotWatch.MatchString(ev.Name) {
+				if !s.isUnwantEvent(ev) {
 					if ev.Op&fsnotify.Create == fsnotify.Create {
 						s.addToTail(ev.Name)
 						if glog.V(2) {
