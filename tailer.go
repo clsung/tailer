@@ -30,8 +30,9 @@ type Tailer struct {
 func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 	var err error
 	t := &Tailer{
-		ch:        make(chan bool),
-		waitGroup: &sync.WaitGroup{},
+		ch:          make(chan bool),
+		waitGroup:   &sync.WaitGroup{},
+		visitedFile: map[string]bool{},
 	}
 	if len(config.Match) > 0 {
 		glog.Warningf("Filter line by regex: %s", config.Match)
