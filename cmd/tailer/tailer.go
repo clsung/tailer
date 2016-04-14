@@ -15,7 +15,7 @@ var version = "v0.0.1"
 
 type cmdOpts struct {
 	OptVersion    bool   `short:"v" long:"version" description:"print the version and exit"`
-	OptNats       bool   `long:"nats" description:"Using nats to publish" default:"false"`
+	OptNats       bool   `long:"nats" description:"Using nats to publish"`
 	OptConfigfile string `long:"config" description:"config file" optional:"yes"`
 }
 
