@@ -9,5 +9,6 @@ ENV NATS_CLUSTER nats://localhost:4222/
 ENV TAILER_CONFIG ""
 VOLUME /tmp
 VOLUME /mnt/extend-disk/tmp
+VOLUME /csi/logs
 
-CMD ["/tailer", "--nats", "/tmp,/mnt/extend-disk/tmp"]
+CMD ["/tailer", "--nats", "/tmp,/mnt/extend-disk/tmp,/csi/logs"]

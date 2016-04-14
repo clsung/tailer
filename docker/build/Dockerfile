@@ -1,4 +1,4 @@
-FROM google/golang:1.4
+FROM google/golang:1.5
 
 MAINTAINER Cheng-Lung Sung <clsung@gmail.com>
 
