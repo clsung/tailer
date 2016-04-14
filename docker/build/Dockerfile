@@ -1,7 +1,8 @@
-FROM golang:1.5
+FROM golang:1.5.3-alpine
 
 MAINTAINER Cheng-Lung Sung <clsung@gmail.com>
 
+RUN apk add --update git
 RUN go get -u github.com/clsung/tailer/cmd/tailer
 
-CMD /gopath/bin/tailer /tmp
+CMD ${GOPATH}/bin/tailer /tmp
