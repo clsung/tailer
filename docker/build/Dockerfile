@@ -1,4 +1,4 @@
-FROM golang:1.5.3-alpine
+FROM golang:1.7.1-alpine
 
 MAINTAINER Cheng-Lung Sung <clsung@gmail.com>
 

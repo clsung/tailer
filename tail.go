@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ActiveState/tail"
 	"github.com/golang/glog"
+	"github.com/hpcloud/tail"
 )
 
 // observe file and add to tailer
