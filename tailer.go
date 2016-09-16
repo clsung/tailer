@@ -24,6 +24,7 @@ type Tailer struct {
 	numOfTail   int64
 	fileLock    sync.Mutex
 	visitedFile map[string]bool
+	polling     bool
 }
 
 // Make a new Tailer
@@ -33,6 +34,10 @@ func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 		ch:          make(chan bool),
 		waitGroup:   &sync.WaitGroup{},
 		visitedFile: map[string]bool{},
+		polling:     false,
+	}
+	if config.Polling {
+		t.polling = config.Polling
 	}
 	if len(config.Match) > 0 {
 		log.Warningf("Filter line by regex: %s", config.Match)
