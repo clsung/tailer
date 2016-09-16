@@ -46,7 +46,7 @@ func main() {
 		return
 	}
 
-	config := tailer.Config{FileGlob: "*-*"} // assume abc-def.log
+	config := tailer.Config{FileGlob: "*"} // assume everything
 	configFile := opts.OptConfigfile
 	if configFile == "" {
 		configFile = os.Getenv("TAILER_CONFIG")
