@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/apcera/nats"
-	"github.com/golang/glog"
 )
 
 const fileLayout = "200601021504"
@@ -37,14 +37,14 @@ func (f *FileEmitter) Start() (err error) {
 	f.ticker = time.NewTicker(time.Minute)
 	err = f.rotate()
 	if err != nil {
-		glog.Errorf("Start error: %v", err)
+		log.Errorf("Start error: %v", err)
 		return err
 	}
 	go func() {
 		for _ = range f.ticker.C {
 			err = f.rotate()
 			if err != nil {
-				glog.Errorf("Ticker error: %v", err)
+				log.Errorf("Ticker error: %v", err)
 				break
 			}
 		}
@@ -67,7 +67,7 @@ func (f *FileEmitter) Emit(m *nats.Msg) (err error) {
 	_, err = f.out.WriteString(msg)
 	f.fLock.Unlock()
 	if err != nil {
-		glog.Errorf("Emit error: %v", err)
+		log.Errorf("Emit error: %v", err)
 		return err
 	}
 	return nil
@@ -83,18 +83,18 @@ func (f *FileEmitter) rotate() (err error) {
 		f.out.Sync()
 		err = f.out.Close()
 		if err != nil {
-			glog.Errorf("Close File error: %v", err)
+			log.Errorf("Close File error: %v", err)
 			return err
 		}
 	}
 	f.out, err = os.OpenFile(filePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		glog.Errorf("Create/Append File error: %v", err)
+		log.Errorf("Create/Append File error: %v", err)
 		return err
 	}
 	_, err = f.out.Seek(0, os.SEEK_END)
 	if err != nil {
-		glog.Errorf("Seek File error: %v", err)
+		log.Errorf("Seek File error: %v", err)
 		return err
 	}
 	return nil

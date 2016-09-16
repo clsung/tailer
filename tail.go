@@ -7,7 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"github.com/hpcloud/tail"
 )
 
@@ -20,25 +20,21 @@ func (s *Tailer) addToTail(filePath string) error {
 // TailFile tail -f the file and emit with publisher
 func (s *Tailer) tailFile(filename string) {
 	defer func() {
-		if glog.V(2) {
-			glog.Warningf("Stop %s", filename)
-		}
+		log.Warningf("Stop %s", filename)
 		s.waitGroup.Done()
 	}()
 	s.waitGroup.Add(1)
 	base := filepath.Base(filename)
 	if RegexNotWatch.MatchString(base) {
-		if glog.V(2) {
-			glog.Warningf("Skip %s", filename)
-		}
+		log.Warningf("Skip %s", filename)
 		return
 	}
-	glog.Warningf("Tail %s, %d are watched", filename, atomic.LoadInt64(&s.numOfTail))
+	log.Warningf("Tail %s, %d are watched", filename, atomic.LoadInt64(&s.numOfTail))
 	t, err := tail.TailFile(filename, tail.Config{
 		Follow: true, Location: &tail.SeekInfo{Offset: 0, Whence: os.SEEK_END},
 	})
 	if err != nil {
-		glog.Errorf("initial tail file error: %v", err)
+		log.Errorf("initial tail file error: %v", err)
 		return
 	}
 	s.fileLock.Lock()
@@ -55,7 +51,7 @@ func (s *Tailer) tailFile(filename string) {
 				break
 			}
 			if time.Now().After(fi.ModTime().Add(time.Hour)) {
-				glog.Warningf("unwatch modified time > 60 minutes: %s", filename)
+				log.Warningf("unwatch modified time > 60 minutes: %s", filename)
 				t.Kill(nil)
 				break
 			} else {
@@ -70,16 +66,16 @@ func (s *Tailer) tailFile(filename string) {
 			err = s.publisher.Publish([]byte(fmt.Sprintf("%s: %s", base, line.Text)))
 			if err != nil {
 				if err == ErrNatsExceedMaxReconnects {
-					glog.Fatalf("publish error: %v", err)
+					log.Fatalf("publish error: %v", err)
 				} else {
-					glog.Errorf("publish error: %v", err)
+					log.Errorf("publish error: %v", err)
 				}
 			}
 		}
 	}
 	err = t.Wait()
 	if err != nil {
-		glog.Errorf("wait error: %v", err)
+		log.Errorf("wait error: %v", err)
 	}
 	s.fileLock.Lock()
 	atomic.AddInt64(&s.numOfTail, -1)

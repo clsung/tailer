@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/apcera/nats"
-	"github.com/golang/glog"
 )
 
 // NatsPublisher will Publish messages via nats
@@ -31,17 +31,17 @@ func NewNatsPublisher(url string) (Publisher, error) {
 
 	nc, err := opts.Connect()
 	if err != nil {
-		glog.Errorf("error to connect to %s: %v", url, err)
+		log.Errorf("error to connect to %s: %v", url, err)
 		return nil, err
 	}
 	nc.Opts.DisconnectedCB = func(nc *nats.Conn) {
-		glog.Warningf("Got disconnected! Reconnects: %d", nc.Reconnects)
+		log.Warningf("Got disconnected! Reconnects: %d", nc.Reconnects)
 	}
 	nc.Opts.ReconnectedCB = func(nc *nats.Conn) {
-		glog.Warningf("Got reconnected to %v!", nc.ConnectedUrl())
+		log.Warningf("Got reconnected to %v!", nc.ConnectedUrl())
 	}
 	nc.Opts.ClosedCB = func(_ *nats.Conn) {
-		glog.Fatal("Got closed")
+		log.Fatal("Got closed")
 	}
 	hostname := os.Getenv("HOSTNAME")
 	if hostname == "" {
@@ -68,7 +68,7 @@ func (n *NatsPublisher) isExceedMaxReconnects() bool {
 
 // Publish publish the message to server
 func (n *NatsPublisher) Publish(msg []byte) error {
-	glog.V(2).Infof("publish %s with topic %s", msg, n.topic)
+	log.Debugf("publish %s with topic %s", msg, n.topic)
 	err := n.nc.Publish(n.topic, msg)
 	if err != nil {
 		if n.isExceedMaxReconnects() {

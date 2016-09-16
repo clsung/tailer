@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"sync"
 
-	"github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 )
 
 var (
@@ -35,7 +35,7 @@ func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 		visitedFile: map[string]bool{},
 	}
 	if len(config.Match) > 0 {
-		glog.Warningf("Filter line by regex: %s", config.Match)
+		log.Warningf("Filter line by regex: %s", config.Match)
 		t.matchLine, err = regexp.Compile(config.Match)
 		if err != nil {
 			return nil, err
@@ -63,7 +63,7 @@ func (s *Tailer) Serve(watchDirs []string, fileGlob string) {
 		fileGlobPattern := fmt.Sprintf("%s/%s", dir, fileGlob)
 		files, _ := filepath.Glob(fileGlobPattern)
 		filesToTail = append(filesToTail, files...)
-		glog.Warningf("Files to watch now: %v", filesToTail)
+		log.Warningf("Files to watch now: %v", filesToTail)
 		go s.watchDir(dir)
 	}
 
