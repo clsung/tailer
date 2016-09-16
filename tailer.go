@@ -38,6 +38,7 @@ func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 	}
 	if config.Polling {
 		t.polling = config.Polling
+		log.Warningf("Polling mode: %v", t.polling)
 	}
 	if len(config.Match) > 0 {
 		log.Warningf("Filter line by regex: %s", config.Match)
