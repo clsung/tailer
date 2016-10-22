@@ -17,10 +17,10 @@ func TestIsUnwantEvent(t *testing.T) {
 	}
 	assert.Equal(t, tr.visitedFile["def.log.gz"], false)
 	testEvents := []fsnotify.Event{
-		fsnotify.Event{Name: "abc.123.log"},
-		fsnotify.Event{Name: "def.log.gz"},
-		fsnotify.Event{Name: "ghi.456.log"},
-		fsnotify.Event{Name: "tailer.root.log.WARNING.20150211-023041"},
+		{Name: "abc.123.log"},
+		{Name: "def.log.gz"},
+		{Name: "ghi.456.log"},
+		{Name: "tailer.root.log.WARNING.20150211-023041"},
 	}
 	for _, ev := range testEvents {
 		assert.Equal(t, tr.isUnwantEvent(ev), true)
