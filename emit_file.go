@@ -54,7 +54,7 @@ func (f *FileEmitter) Start() (err error) {
 	return err
 }
 
-// Start stops the fileEmitter
+// Stop stops the fileEmitter
 func (f *FileEmitter) Stop() {
 	fmt.Printf("Stop fileEmitter")
 	if f.out != nil {

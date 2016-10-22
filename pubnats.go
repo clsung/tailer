@@ -18,6 +18,7 @@ type NatsPublisher struct {
 }
 
 var (
+	// ErrNatsExceedMaxReconnects says number of reconnect attempts exceed
 	ErrNatsExceedMaxReconnects = errors.New("pubnats: exceed max reconnects")
 )
 
