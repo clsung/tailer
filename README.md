@@ -3,6 +3,7 @@
 `tailer` is a package for Go that tail -f the files in the watching
 directory, and publish to a NATS server.
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/clsung/tailer)](https://goreportcard.com/report/github.com/clsung/tailer)
 ## Installation and Usage
 
 Install using `go get github.com/clsung/tailer/cmd/tailer`.
