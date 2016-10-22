@@ -27,7 +27,7 @@ type Tailer struct {
 	polling     bool
 }
 
-// Make a new Tailer
+// NewTailer makes a new Tailer
 func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 	var err error
 	t := &Tailer{
@@ -62,6 +62,7 @@ func NewTailer(publishToNats bool, config Config) (*Tailer, error) {
 	return t, nil
 }
 
+// Serve checks files in watchDirs with fileGlob pattern
 func (s *Tailer) Serve(watchDirs []string, fileGlob string) {
 	// examine the input dir and select how many files to watch and publish
 	filesToTail := []string{}

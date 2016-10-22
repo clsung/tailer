@@ -23,9 +23,11 @@ func (f *StdoutEmitter) Emit(msg *nats.Msg) error {
 	return nil
 }
 
+// Start NOOP in stdout
 func (f *StdoutEmitter) Start() error {
 	return nil
 }
 
+// Stop NOOP in stdout
 func (f *StdoutEmitter) Stop() {
 }

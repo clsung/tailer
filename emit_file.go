@@ -13,7 +13,7 @@ import (
 
 const fileLayout = "200601021504"
 
-// FileEmitter print to file, seperated by time
+// FileEmitter print to file, separated by time
 type FileEmitter struct {
 	out    *os.File
 	dir    string
@@ -22,6 +22,7 @@ type FileEmitter struct {
 	fLock  sync.Mutex
 }
 
+// NewFileEmitter return a new FileEmitter
 func NewFileEmitter(directory, prefix string) (Emitter, error) {
 	var err error
 	directory, err = filepath.Abs(directory)
@@ -32,6 +33,7 @@ func NewFileEmitter(directory, prefix string) (Emitter, error) {
 	return f, nil
 }
 
+// Start starts the fileEmitter
 func (f *FileEmitter) Start() (err error) {
 	fmt.Printf("Start fileEmitter")
 	f.ticker = time.NewTicker(time.Minute)
@@ -52,6 +54,7 @@ func (f *FileEmitter) Start() (err error) {
 	return err
 }
 
+// Start stops the fileEmitter
 func (f *FileEmitter) Stop() {
 	fmt.Printf("Stop fileEmitter")
 	if f.out != nil {

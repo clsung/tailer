@@ -18,7 +18,6 @@ type NatsPublisher struct {
 }
 
 var (
-	ErrNatsConnectionClosed    = nats.ErrConnectionClosed
 	ErrNatsExceedMaxReconnects = errors.New("pubnats: exceed max reconnects")
 )
 
